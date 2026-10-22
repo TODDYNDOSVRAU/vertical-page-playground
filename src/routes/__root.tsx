@@ -12,6 +12,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { PlayerProvider } from "@/player/PlayerProvider";
+import { MiniPlayer } from "@/components/music/MiniPlayer";
+import { TabBar } from "@/components/music/TabBar";
+import { FullPlayer } from "@/components/music/FullPlayer";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -120,8 +125,20 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PlayerProvider>
+        <div className="min-h-dvh bg-muted/40 flex justify-center">
+          <div className="relative w-full max-w-[430px] h-dvh bg-background text-foreground font-sans overflow-hidden shadow-2xl">
+            <main className="h-dvh overflow-y-auto px-5 pt-12 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </main>
+            <MiniPlayer />
+            <TabBar />
+            <FullPlayer />
+          </div>
+        </div>
+        <Toaster position="top-center" />
+      </PlayerProvider>
     </QueryClientProvider>
   );
 }
