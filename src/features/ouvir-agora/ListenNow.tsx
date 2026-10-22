@@ -14,7 +14,9 @@ export function ListenNow() {
       <H1>Ouvir Agora</H1>
       <button type="button" onClick={() => playTrack(top)} className="w-full text-left">
         <div className="text-xs font-semibold uppercase text-muted-foreground">Destaque</div>
-        <div className="font-display text-xl font-semibold">{top.album} — {top.artist}</div>
+        <div className="font-display text-xl font-semibold">
+          {top.album} — {top.artist}
+        </div>
         <Cover t={top} className="mt-3 aspect-[4/3] w-full rounded-2xl text-2xl shadow-xl" />
       </button>
       <H2>Tocadas recentemente</H2>
