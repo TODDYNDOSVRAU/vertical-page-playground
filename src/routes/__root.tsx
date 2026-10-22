@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Editor de páginas" },
+      { title: "Sonora" },
       { name: "description", content: "Crie páginas no celular" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Editor de páginas" },
+      { property: "og:title", content: "Sonora" },
       { property: "og:description", content: "Crie páginas no celular" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
