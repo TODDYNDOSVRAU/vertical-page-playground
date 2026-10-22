@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { LyricLine } from "@/data/tracks";
 import { activeLyricIndex } from "@/player/logic";
 
-export function Lyrics({ lines, time, onSeek }: { lines?: LyricLine[]; time: number; onSeek: (s: number) => void }) {
+export function Lyrics({ lines, time, onSeek }: { lines?: LyricLine[] | undefined; time: number; onSeek: (s: number) => void }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const active = lines ? activeLyricIndex(lines, time) : -1;
   useEffect(() => { refs.current[active]?.scrollIntoView({ behavior: "smooth", block: "center" }); }, [active]);
