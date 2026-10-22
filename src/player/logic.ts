@@ -1,7 +1,12 @@
 import type { LyricLine } from "@/data/tracks";
 
 /** Próximo índice da fila. No aleatório nunca sorteia o índice atual (se houver outra opção). */
-export function nextIndex(current: number, length: number, shuffle: boolean, rand: () => number = Math.random): number {
+export function nextIndex(
+  current: number,
+  length: number,
+  shuffle: boolean,
+  rand: () => number = Math.random,
+): number {
   if (length <= 1) return 0;
   if (!shuffle) return (current + 1) % length;
   const pick = Math.floor(rand() * (length - 1));

@@ -11,7 +11,10 @@ const TABS = [
 
 export function TabBar() {
   return (
-    <nav aria-label="Abas" className="absolute bottom-0 inset-x-0 h-[calc(72px+env(safe-area-inset-bottom))] pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card/85 backdrop-blur-xl border-t border-border grid grid-cols-5">
+    <nav
+      aria-label="Abas"
+      className="absolute bottom-0 inset-x-0 h-[calc(72px+env(safe-area-inset-bottom))] pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card/85 backdrop-blur-xl border-t border-border grid grid-cols-5"
+    >
       {TABS.map(({ to, label, Icon }) => (
         <Link
           key={to}
@@ -20,7 +23,8 @@ export function TabBar() {
           className="flex flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground data-[status=active]:text-primary"
           activeProps={{ "aria-current": "page" }}
         >
-          <Icon className="h-6 w-6" aria-hidden="true" />{label}
+          <Icon className="h-6 w-6" aria-hidden="true" />
+          {label}
         </Link>
       ))}
     </nav>

@@ -12,7 +12,10 @@ describe("nextIndex", () => {
 
 describe("activeLyricIndex", () => {
   it("follows the real playback time", () => {
-    const lines = [{ time: 0, text: "a" }, { time: 10, text: "b" }];
+    const lines = [
+      { time: 0, text: "a" },
+      { time: 10, text: "b" },
+    ];
     expect(activeLyricIndex(lines, 9.9)).toBe(0);
     expect(activeLyricIndex(lines, 10)).toBe(1);
   });

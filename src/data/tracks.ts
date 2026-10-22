@@ -67,4 +67,6 @@ export const coverStyle = (t: Track) => ({
 });
 
 export const fmtTime = (s: number) =>
-  Number.isFinite(s) && s >= 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
+  Number.isFinite(s) && s >= 0
+    ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`
+    : "0:00";
