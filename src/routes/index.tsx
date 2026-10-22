@@ -71,7 +71,7 @@ function App() {
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState(false);
   const [playlists, setPlaylists] = useState<{ name: string; ids: number[] }[]>([{ name: "Para correr", ids: [2, 3, 5] }]);
-  const track = queue[idx];
+  const track = (queue[idx] ?? TRACKS[0])!;
 
   useEffect(() => {
     const a = audio.current;
@@ -256,7 +256,7 @@ function Shelf({ items, ctx }: { items: Track[]; ctx: Ctx }) {
 }
 
 function ListenNow(ctx: Ctx) {
-  const top = TRACKS[0];
+  const top = TRACKS[0]!;
   return (
     <>
       <H1>Ouvir Agora</H1>
@@ -300,7 +300,7 @@ function Browse(ctx: Ctx) {
 }
 
 function RadioTab(ctx: Ctx) {
-  const stations = GENRES.map((g) => ({ g, list: TRACKS.filter((t) => t.genre === g) }));
+  const stations = GENRES.map((g) => ({ g, list: TRACKS.filter((t) => t.genre === g) as [Track, ...Track[]] }));
   return (
     <>
       <H1>Rádio</H1>
@@ -354,7 +354,7 @@ function LibraryTab(ctx: Ctx) {
           </>
         )}
         {view === "Artistas" && artists.map((a) => {
-          const items = TRACKS.filter((t) => t.artist === a);
+          const items = TRACKS.filter((t) => t.artist === a) as [Track, ...Track[]];
           return (
             <button key={a} onClick={() => ctx.playTrack(items[0], items)} className="flex w-full items-center gap-3 py-2 text-left">
               <Cover t={items[0]} className="h-12 w-12 rounded-full text-[0px]" /><span className="font-medium">{a}</span>
@@ -364,7 +364,7 @@ function LibraryTab(ctx: Ctx) {
         {view === "Álbuns" && (
           <div className="grid grid-cols-2 gap-4">
             {albums.map((al) => {
-              const items = TRACKS.filter((t) => t.album === al);
+              const items = TRACKS.filter((t) => t.album === al) as [Track, ...Track[]];
               return (
                 <button key={al} onClick={() => ctx.playTrack(items[0], items)} className="text-left">
                   <Cover t={items[0]} className="aspect-square w-full rounded-xl text-xs" />
