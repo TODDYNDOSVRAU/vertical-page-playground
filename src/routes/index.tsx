@@ -18,6 +18,7 @@ type Block = { id: string; type: BlockType; value: string };
 type Page = { id: string; name: string; blocks: Block[] };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+const move = (a: Block[], from: number, to: number) => { const b = [...a]; const [x] = b.splice(from, 1); if (x) b.splice(to, 0, x); return b; };
 const KEY = "mobile-pages-v1";
 const labels: Record<BlockType, string> = { titulo: "Título", texto: "Texto", imagem: "Imagem (URL)", botao: "Botão" };
 
@@ -67,8 +68,8 @@ function Index() {
             <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
               {labels[b.type]}
               <div className="flex gap-3 text-base">
-                <button disabled={i === 0} onClick={() => update((p) => { const bl = [...p.blocks]; [bl[i - 1], bl[i]] = [bl[i], bl[i - 1]]; return { ...p, blocks: bl }; })}>↑</button>
-                <button disabled={i === page.blocks.length - 1} onClick={() => update((p) => { const bl = [...p.blocks]; [bl[i + 1], bl[i]] = [bl[i], bl[i + 1]]; return { ...p, blocks: bl }; })}>↓</button>
+                <button disabled={i === 0} onClick={() => update((p) => { return { ...p, blocks: move(p.blocks, i, i - 1) }; })}>↑</button>
+                <button disabled={i === page.blocks.length - 1} onClick={() => update((p) => { return { ...p, blocks: move(p.blocks, i, i + 1) }; })}>↓</button>
                 <button onClick={() => update((p) => ({ ...p, blocks: p.blocks.filter((x) => x.id !== b.id) }))}>✕</button>
               </div>
             </div>
