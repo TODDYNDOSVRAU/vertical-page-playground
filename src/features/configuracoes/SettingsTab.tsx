@@ -38,9 +38,8 @@ export function SettingsTab() {
 
       <H2>Sobre</H2>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Sonora é um app de demonstração: as {TRACKS.length} faixas são áudios demo e não há
-        login nem contas. Tudo que você salva (favoritas, playlists e buscas) fica apenas
-        neste navegador.
+        Sonora é um app de demonstração: as {TRACKS.length} faixas são áudios demo e não há login
+        nem contas. Tudo que você salva (favoritas, playlists e buscas) fica apenas neste navegador.
       </p>
 
       <H2>Timer de sono</H2>
@@ -86,8 +85,8 @@ export function SettingsTab() {
           <DialogHeader>
             <DialogTitle>Apagar dados salvos?</DialogTitle>
             <DialogDescription>
-              Favoritas, playlists, buscas recentes e o Replay serão apagados deste navegador. As faixas
-              demo continuam disponíveis.
+              Favoritas, playlists, buscas recentes e o Replay serão apagados deste navegador. As
+              faixas demo continuam disponíveis.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -8,7 +8,15 @@ import { H1 } from "@/components/music/Headings";
 import { Row } from "@/components/music/Row";
 import { NewPlaylistDialog } from "@/components/music/NewPlaylistDialog";
 
-const VIEWS = ["Playlists", "Artistas", "Álbuns", "Músicas", "Favoritas", "Minhas músicas", "Replay"] as const;
+const VIEWS = [
+  "Playlists",
+  "Artistas",
+  "Álbuns",
+  "Músicas",
+  "Favoritas",
+  "Minhas músicas",
+  "Replay",
+] as const;
 
 export function LibraryTab() {
   const p = usePlayer();
@@ -163,7 +171,9 @@ export function LibraryTab() {
         )}
         {view === "Replay" && (
           <div className="rounded-2xl border border-border bg-card p-5">
-            <div className="text-xs font-semibold uppercase text-muted-foreground">Sonora Replay</div>
+            <div className="text-xs font-semibold uppercase text-muted-foreground">
+              Sonora Replay
+            </div>
             <div className="mt-1 font-display text-4xl font-semibold">{replay.minutes} min</div>
             <div className="text-sm text-muted-foreground">ouvidos neste navegador</div>
             {replay.top.length ? (
@@ -178,7 +188,9 @@ export function LibraryTab() {
                   >
                     <span className="w-4 text-sm text-muted-foreground">{i + 1}</span>
                     <Cover t={track} className="h-10 w-10 rounded-md text-[6px]" />
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{track.title}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {track.title}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {plays} {plays === 1 ? "vez" : "vezes"}
                     </span>

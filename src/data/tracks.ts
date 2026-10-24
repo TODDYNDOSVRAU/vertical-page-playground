@@ -29,7 +29,14 @@ type Seed = [
 ];
 
 const SEEDS: Seed[] = [
-  ["Luz de Neon", "Aurora Vale", "Cidade Elétrica", "Pop", ["#ff2d55", "#5e2bff"], ["Viagem", "Treino"]],
+  [
+    "Luz de Neon",
+    "Aurora Vale",
+    "Cidade Elétrica",
+    "Pop",
+    ["#ff2d55", "#5e2bff"],
+    ["Viagem", "Treino"],
+  ],
   ["Maré Alta", "Os Faróis", "Litoral", "Indie", ["#0a84ff", "#30d158"], ["Relax", "Viagem"]],
   ["Concreto", "MC Atlas", "Ruas", "Hip-Hop", ["#ff9f0a", "#3a0ca3"], ["Treino"]],
   ["Pulso", "Kairo", "Frequência", "Eletrônica", ["#64d2ff", "#bf5af2"], ["Foco", "Treino"]],
@@ -75,17 +82,19 @@ const DEMO_LYRICS: Record<number, LyricLine[]> = {
   ]),
 };
 
-export const DEMO_TRACKS: Track[] = SEEDS.map(([title, artist, album, genre, colors, moods], i) => ({
-  id: i,
-  moods,
-  ...(DEMO_LYRICS[i] ? { lyrics: DEMO_LYRICS[i] } : {}),
-  title,
-  artist,
-  album,
-  genre,
-  colors,
-  src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${i + 1}.mp3`,
-}));
+export const DEMO_TRACKS: Track[] = SEEDS.map(
+  ([title, artist, album, genre, colors, moods], i) => ({
+    id: i,
+    moods,
+    ...(DEMO_LYRICS[i] ? { lyrics: DEMO_LYRICS[i] } : {}),
+    title,
+    artist,
+    album,
+    genre,
+    colors,
+    src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${i + 1}.mp3`,
+  }),
+);
 
 export const TRACKS = DEMO_TRACKS;
 

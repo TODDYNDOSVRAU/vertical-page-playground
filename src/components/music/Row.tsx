@@ -26,7 +26,9 @@ export function Row({ t, list, playlistId }: { t: Track; list?: Track[]; playlis
       >
         <Cover t={t} className="h-12 w-12 shrink-0 rounded-md text-[7px]" />
         <div className="min-w-0">
-          <div className={`flex items-center gap-1.5 text-sm font-medium ${on ? "text-primary" : ""}`}>
+          <div
+            className={`flex items-center gap-1.5 text-sm font-medium ${on ? "text-primary" : ""}`}
+          >
             <span className="truncate">{t.title}</span>
             {on && <Equalizer playing={p.playing} />}
           </div>

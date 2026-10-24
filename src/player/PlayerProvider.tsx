@@ -47,7 +47,10 @@ const KEYS = {
 const isRecord = (v: unknown): v is Record<string, number> =>
   typeof v === "object" && v !== null && Object.values(v).every((x) => typeof x === "number");
 const isStats = (v: unknown): v is Stats =>
-  typeof v === "object" && v !== null && isRecord((v as Stats).seconds) && isRecord((v as Stats).plays);
+  typeof v === "object" &&
+  v !== null &&
+  isRecord((v as Stats).seconds) &&
+  isRecord((v as Stats).plays);
 
 const PALETTE: [string, string][] = [
   ["#ff2d55", "#5e2bff"],

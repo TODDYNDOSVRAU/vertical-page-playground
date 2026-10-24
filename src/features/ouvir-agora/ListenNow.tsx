@@ -17,7 +17,11 @@ export function ListenNow() {
   return (
     <>
       <H1>Ouvir Agora</H1>
-      <div className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1" role="group" aria-label="Filtrar por humor">
+      <div
+        className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1"
+        role="group"
+        aria-label="Filtrar por humor"
+      >
         {[null, ...MOODS].map((m) => (
           <button
             type="button"
@@ -42,17 +46,17 @@ export function ListenNow() {
         </>
       ) : (
         <>
-      <button type="button" onClick={() => playTrack(top)} className="w-full text-left">
-        <div className="text-xs font-semibold uppercase text-muted-foreground">Destaque</div>
-        <div className="font-display text-xl font-semibold">
-          {top.album} — {top.artist}
-        </div>
-        <Cover t={top} className="mt-3 aspect-[4/3] w-full rounded-2xl text-2xl shadow-xl" />
-      </button>
-      <H2>Tocadas recentemente</H2>
-      <Shelf items={TRACKS.slice(2, 7)} />
-      <H2>Feito para você</H2>
-      <Shelf items={MADE_FOR_YOU} />
+          <button type="button" onClick={() => playTrack(top)} className="w-full text-left">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Destaque</div>
+            <div className="font-display text-xl font-semibold">
+              {top.album} — {top.artist}
+            </div>
+            <Cover t={top} className="mt-3 aspect-[4/3] w-full rounded-2xl text-2xl shadow-xl" />
+          </button>
+          <H2>Tocadas recentemente</H2>
+          <Shelf items={TRACKS.slice(2, 7)} />
+          <H2>Feito para você</H2>
+          <Shelf items={MADE_FOR_YOU} />
         </>
       )}
     </>

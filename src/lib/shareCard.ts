@@ -15,7 +15,10 @@ function wrap(g: CanvasRenderingContext2D, text: string, max: number): string[] 
 }
 
 /** Gera um card vertical (Stories) e compartilha ou baixa. Chame só em handlers. */
-export async function shareTrackCard(t: Track, lyric?: string): Promise<"shared" | "downloaded" | "cancelled"> {
+export async function shareTrackCard(
+  t: Track,
+  lyric?: string,
+): Promise<"shared" | "downloaded" | "cancelled"> {
   const W = 1080;
   const H = 1920;
   const c = document.createElement("canvas");
@@ -59,7 +62,9 @@ export async function shareTrackCard(t: Track, lyric?: string): Promise<"shared"
 
   if (lyric) {
     g.font = "600 56px Fraunces, serif";
-    wrap(g, `“${lyric}”`, size).slice(0, 3).forEach((l, i) => g.fillText(l, x, 1510 + i * 72));
+    wrap(g, `“${lyric}”`, size)
+      .slice(0, 3)
+      .forEach((l, i) => g.fillText(l, x, 1510 + i * 72));
   }
   g.globalAlpha = 0.7;
   g.font = "600 40px 'DM Sans', sans-serif";
