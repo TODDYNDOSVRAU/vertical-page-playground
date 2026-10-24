@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Cover } from "./Cover";
+import { Equalizer } from "./Equalizer";
+import { shareCard } from "./share";
 
 export function Row({ t, list, playlistId }: { t: Track; list?: Track[]; playlistId?: string }) {
   const p = usePlayer();
@@ -24,8 +26,9 @@ export function Row({ t, list, playlistId }: { t: Track; list?: Track[]; playlis
       >
         <Cover t={t} className="h-12 w-12 shrink-0 rounded-md text-[7px]" />
         <div className="min-w-0">
-          <div className={`truncate text-sm font-medium ${on ? "text-primary" : ""}`}>
-            {t.title}
+          <div className={`flex items-center gap-1.5 text-sm font-medium ${on ? "text-primary" : ""}`}>
+            <span className="truncate">{t.title}</span>
+            {on && <Equalizer playing={p.playing} />}
           </div>
           <div className="truncate text-xs text-muted-foreground">
             {t.artist} · {t.album}
@@ -50,6 +53,9 @@ export function Row({ t, list, playlistId }: { t: Track; list?: Track[]; playlis
           <MoreHorizontal className="h-5 w-5" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => p.playNext(t)}>Tocar a seguir</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => void shareCard(t)}>Compartilhar card</DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuLabel>Adicionar à playlist</DropdownMenuLabel>
           {p.playlists.length === 0 && (
             <DropdownMenuItem disabled>Nenhuma playlist</DropdownMenuItem>
