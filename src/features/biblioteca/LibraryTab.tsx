@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Trash2, Upload } from "lucide-react";
+import { aggregateStats } from "@/player/logic";
 import { TRACKS, type Track } from "@/data/tracks";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Cover } from "@/components/music/Cover";
@@ -6,7 +8,15 @@ import { H1 } from "@/components/music/Headings";
 import { Row } from "@/components/music/Row";
 import { NewPlaylistDialog } from "@/components/music/NewPlaylistDialog";
 
-const VIEWS = ["Playlists", "Artistas", "Álbuns", "Músicas", "Favoritas"] as const;
+const VIEWS = [
+  "Playlists",
+  "Artistas",
+  "Álbuns",
+  "Músicas",
+  "Favoritas",
+  "Minhas músicas",
+  "Replay",
+] as const;
 
 export function LibraryTab() {
   const p = usePlayer();
@@ -14,7 +24,8 @@ export function LibraryTab() {
   const [open, setOpen] = useState<string | null>(null);
   const artists = Array.from(new Set(TRACKS.map((t) => t.artist)));
   const albums = Array.from(new Set(TRACKS.map((t) => t.album)));
-  const favList = TRACKS.filter((t) => p.favs.includes(t.id));
+  const favList = p.library.filter((t) => p.favs.includes(t.id));
+  const replay = useMemo(() => aggregateStats(p.stats, p.library), [p.stats, p.library]);
   return (
     <>
       <H1>Biblioteca</H1>
@@ -40,7 +51,7 @@ export function LibraryTab() {
             <NewPlaylistDialog />
             {p.playlists.map((pl) => {
               const items = pl.ids
-                .map((id) => TRACKS.find((t) => t.id === id))
+                .map((id) => p.library.find((t) => t.id === id))
                 .filter((t): t is Track => !!t);
               return (
                 <div key={pl.id}>
@@ -119,6 +130,92 @@ export function LibraryTab() {
               Toque no coração de uma música para salvá-la aqui.
             </p>
           ))}
+        {view === "Minhas músicas" && (
+          <>
+            <label className="mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm font-medium text-primary">
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Importar do aparelho
+              <input
+                type="file"
+                accept="audio/*"
+                multiple
+                className="sr-only"
+                onChange={(e) => {
+                  if (e.target.files) void p.importFiles(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {p.imported.length ? (
+              p.imported.map((t) => (
+                <div key={t.id} className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Row t={t} list={p.imported} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => p.deleteImported(t.id)}
+                    aria-label={`Apagar ${t.title}`}
+                    className="p-1 text-muted-foreground"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                As músicas que você importar ficam salvas só neste navegador.
+              </p>
+            )}
+          </>
+        )}
+        {view === "Replay" && (
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">
+              Sonora Replay
+            </div>
+            <div className="mt-1 font-display text-4xl font-semibold">{replay.minutes} min</div>
+            <div className="text-sm text-muted-foreground">ouvidos neste navegador</div>
+            {replay.top.length ? (
+              <>
+                <div className="mt-5 text-sm font-semibold">Mais tocadas</div>
+                {replay.top.map(({ track, plays }, i) => (
+                  <button
+                    type="button"
+                    key={track.id}
+                    onClick={() => p.playTrack(track, p.library)}
+                    className="flex w-full items-center gap-3 py-2 text-left"
+                  >
+                    <span className="w-4 text-sm text-muted-foreground">{i + 1}</span>
+                    <Cover t={track} className="h-10 w-10 rounded-md text-[6px]" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {track.title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {plays} {plays === 1 ? "vez" : "vezes"}
+                    </span>
+                  </button>
+                ))}
+                {replay.genres.length > 0 && (
+                  <>
+                    <div className="mt-4 text-sm font-semibold">Gêneros favoritos</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {replay.genres.map((g) => (
+                        <span key={g.genre} className="rounded-full bg-secondary px-3 py-1 text-xs">
+                          {g.genre} · {g.minutes} min
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Ouça algumas músicas para ver suas estatísticas.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

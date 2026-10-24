@@ -7,15 +7,18 @@ import {
   Pause,
   Play,
   Repeat,
+  Share2,
   Shuffle,
   SkipBack,
   SkipForward,
-  Volume2,
 } from "lucide-react";
 import { fmtTime, hasLyrics } from "@/data/tracks";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Cover } from "./Cover";
 import { Lyrics } from "./Lyrics";
+import { QueueList } from "./QueueList";
+import { SleepMenu } from "./SleepMenu";
+import { shareCard } from "./share";
 
 export function FullPlayer() {
   const p = usePlayer();
@@ -60,27 +63,7 @@ export function FullPlayer() {
             />
           )}
           {panel === "lyrics" && <Lyrics lines={track.lyrics} time={p.time} onSeek={p.seek} />}
-          {panel === "queue" && (
-            <div className="h-full overflow-y-auto py-2">
-              <div className="font-display text-xl font-semibold mb-3">A Seguir</div>
-              {p.queue.map((t, i) => (
-                <button
-                  type="button"
-                  key={t.id + "-" + i}
-                  onClick={() => p.playAt(i)}
-                  aria-current={i === p.idx ? "true" : undefined}
-                  className={`flex w-full items-center gap-3 py-2 text-left ${i === p.idx ? "opacity-100" : "opacity-70"}`}
-                >
-                  <Cover t={t} className="h-11 w-11 rounded-md text-[7px]" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{t.title}</div>
-                    <div className="truncate text-xs opacity-70">{t.artist}</div>
-                  </div>
-                  {i === p.idx && <Volume2 className="h-4 w-4" aria-label="Tocando" />}
-                </button>
-              ))}
-            </div>
-          )}
+          {panel === "queue" && <QueueList />}
         </div>
 
         <div className="mt-6 flex items-center justify-between">
@@ -148,7 +131,7 @@ export function FullPlayer() {
           </button>
         </div>
 
-        <div className="mt-7 flex justify-around opacity-90">
+        <div className="mt-7 flex items-center justify-around opacity-90">
           <button
             type="button"
             disabled={!lyricsOk}
@@ -167,6 +150,15 @@ export function FullPlayer() {
             className={`rounded-lg p-2 ${panel === "queue" ? "bg-background/25" : ""}`}
           >
             <ListMusic className="h-6 w-6" />
+          </button>
+          <SleepMenu />
+          <button
+            type="button"
+            onClick={() => void shareCard(track, p.time)}
+            aria-label="Compartilhar card"
+            className="rounded-lg p-2"
+          >
+            <Share2 className="h-6 w-6" />
           </button>
         </div>
       </div>

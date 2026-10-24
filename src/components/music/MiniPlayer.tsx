@@ -1,6 +1,7 @@
 import { Pause, Play, SkipForward } from "lucide-react";
 import { usePlayer } from "@/player/PlayerProvider";
 import { Cover } from "./Cover";
+import { Equalizer } from "./Equalizer";
 
 export function MiniPlayer() {
   const { track, playing, toggle, next, openFull, time, dur } = usePlayer();
@@ -14,7 +15,10 @@ export function MiniPlayer() {
       >
         <Cover t={track} className="h-11 w-11 shrink-0 rounded-lg text-[8px]" />
         <div className="flex-1 min-w-0">
-          <div className="truncate text-sm font-medium">{track.title}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-medium">{track.title}</span>
+            <Equalizer playing={playing} className="text-primary" />
+          </div>
           <div className="truncate text-xs text-muted-foreground">{track.artist}</div>
         </div>
       </button>
