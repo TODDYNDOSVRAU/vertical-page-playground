@@ -11,7 +11,16 @@ import {
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { TRACKS, type Track } from "@/data/tracks";
-import { nextIndex } from "@/player/logic";
+import {
+  EMPTY_STATS,
+  insertNext,
+  moveInQueue as moveQ,
+  nextIndex,
+  removeFromQueue as removeQ,
+  sleepRemaining,
+  type Stats,
+} from "@/player/logic";
+import { deleteStored, listStored, putStored, type StoredTrack } from "@/lib/idb";
 import {
   isNumberArray,
   isPlaylists,
@@ -32,7 +41,31 @@ const KEYS = {
   favs: "sonora:favs",
   playlists: "sonora:playlists",
   recent: "sonora:recent",
+  stats: "sonora:stats",
 } as const;
+
+const isRecord = (v: unknown): v is Record<string, number> =>
+  typeof v === "object" && v !== null && Object.values(v).every((x) => typeof x === "number");
+const isStats = (v: unknown): v is Stats =>
+  typeof v === "object" && v !== null && isRecord((v as Stats).seconds) && isRecord((v as Stats).plays);
+
+const PALETTE: [string, string][] = [
+  ["#ff2d55", "#5e2bff"],
+  ["#0a84ff", "#30d158"],
+  ["#ff9f0a", "#ff375f"],
+  ["#64d2ff", "#5856d6"],
+];
+const toTrack = (s: StoredTrack): Track => ({
+  id: s.id,
+  title: s.title,
+  artist: "Importada",
+  album: "Minhas músicas",
+  genre: "Importada",
+  colors: s.colors,
+  src: URL.createObjectURL(s.blob),
+});
+
+export type Sleep = { mode: "off" } | { mode: "time"; endsAt: number } | { mode: "track" };
 
 type PlayerCtx = {
   track: Track;
@@ -47,6 +80,17 @@ type PlayerCtx = {
   favs: number[];
   playlists: Playlist[];
   recent: string[];
+  stats: Stats;
+  imported: Track[];
+  library: Track[];
+  sleep: Sleep;
+  sleepLeft: number;
+  setSleep: (v: number | "track" | null) => void;
+  playNext: (t: Track) => void;
+  moveInQueue: (from: number, to: number) => void;
+  removeFromQueue: (i: number) => void;
+  importFiles: (files: FileList | File[]) => Promise<void>;
+  deleteImported: (id: number) => void;
   playTrack: (t: Track, list?: Track[]) => void;
   playAt: (i: number) => void;
   toggle: () => void;
@@ -90,6 +134,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [playlists, setPlaylists] = useState<Playlist[]>(DEFAULT_PLAYLISTS);
   const [recent, setRecent] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [stats, setStats] = useState<Stats>(EMPTY_STATS);
+  const statsRef = useRef<Stats>(EMPTY_STATS);
+  const statsDirty = useRef(false);
+  const lastTime = useRef(0);
+  const countedNonce = useRef(-1);
+  const [imported, setImported] = useState<Track[]>([]);
+  const [sleep, setSleepState] = useState<Sleep>({ mode: "off" });
+  const [now, setNow] = useState(0);
   const full = useRouterState({ select: (s) => s.location.state.player === true });
   const track = (queue[idx] ?? TRACKS[0])!;
 
@@ -98,7 +150,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setFavs(loadJSON(KEYS.favs, [], isNumberArray));
     setPlaylists(loadJSON(KEYS.playlists, DEFAULT_PLAYLISTS, isPlaylists));
     setRecent(loadJSON(KEYS.recent, [], isStringArray));
+    const st = loadJSON(KEYS.stats, EMPTY_STATS, isStats);
+    statsRef.current = st;
+    setStats(st);
     setLoaded(true);
+    let urls: string[] = [];
+    if (typeof indexedDB !== "undefined")
+      listStored()
+        .then((list) => {
+          const ts = list.map(toTrack);
+          urls = ts.map((t) => t.src);
+          setImported(ts);
+        })
+        .catch(() => undefined);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, []);
+  // Estatísticas: acumula em ref e grava a cada 5s
+  useEffect(() => {
+    const flush = () => {
+      if (!statsDirty.current) return;
+      statsDirty.current = false;
+      setStats(statsRef.current);
+      saveJSON(KEYS.stats, statsRef.current);
+    };
+    const id = window.setInterval(flush, 5000);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("pagehide", flush);
+    };
   }, []);
   useEffect(() => {
     if (loaded) saveJSON(KEYS.favs, favs);
@@ -118,6 +198,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     a.currentTime = 0;
     setTime(0);
     setDur(0);
+    lastTime.current = 0;
     if (wantPlay.current) a.play().catch(() => undefined); // falhas chegam via onError / onPause
   }, [track.src, nonce]);
 
@@ -204,6 +285,114 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       navigator.mediaSession.playbackState = playing ? "playing" : "paused";
   }, [playing]);
 
+  // Timer de sono
+  const sleepActive = sleep.mode === "time";
+  useEffect(() => {
+    if (!sleepActive) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [sleepActive]);
+  const sleepLeft = sleep.mode === "time" ? sleepRemaining(sleep.endsAt, now || Date.now()) : 0;
+  const fadeOutAndPause = useCallback(() => {
+    const a = audio.current;
+    setSleepState({ mode: "off" });
+    wantPlay.current = false;
+    if (!a) return;
+    const start = a.volume;
+    let step = 0;
+    const id = window.setInterval(() => {
+      step++;
+      a.volume = Math.max(0, start * (1 - step / 15));
+      if (step >= 15) {
+        window.clearInterval(id);
+        a.pause();
+        a.volume = start;
+        toast("Timer de sono: música pausada");
+      }
+    }, 200);
+  }, []);
+  useEffect(() => {
+    if (sleep.mode === "time" && now && sleepLeft === 0) fadeOutAndPause();
+  }, [sleep.mode, now, sleepLeft, fadeOutAndPause]);
+  const setSleep = useCallback((v: number | "track" | null) => {
+    if (v === null) setSleepState({ mode: "off" });
+    else if (v === "track") setSleepState({ mode: "track" });
+    else {
+      setNow(Date.now());
+      setSleepState({ mode: "time", endsAt: Date.now() + v * 60_000 });
+    }
+  }, []);
+
+  const applyQ = useCallback((r: { queue: Track[]; idx: number }) => {
+    setQueue(r.queue);
+    setIdx(r.idx);
+  }, []);
+  const playNext = useCallback(
+    (t: Track) => {
+      applyQ(insertNext(queue, idx, t));
+      toast(`“${t.title}” vai tocar a seguir`);
+    },
+    [applyQ, queue, idx],
+  );
+  const moveInQueue = useCallback(
+    (from: number, to: number) => applyQ(moveQ(queue, idx, from, to)),
+    [applyQ, queue, idx],
+  );
+  const removeFromQueue = useCallback(
+    (i: number) => applyQ(removeQ(queue, idx, i)),
+    [applyQ, queue, idx],
+  );
+
+  const importFiles = useCallback(async (files: FileList | File[]) => {
+    const list = Array.from(files).filter((f) => f.type.startsWith("audio/"));
+    if (!list.length) {
+      toast.error("Escolha arquivos de áudio");
+      return;
+    }
+    const added: Track[] = [];
+    for (const [i, f] of list.entries()) {
+      const st: StoredTrack = {
+        id: Date.now() + i,
+        title: f.name.replace(/\.[^.]+$/, ""),
+        blob: f,
+        colors: PALETTE[(f.name.length + i) % PALETTE.length]!,
+      };
+      try {
+        await putStored(st);
+        added.push(toTrack(st));
+      } catch {
+        toast.error(`Não foi possível importar ${f.name}`);
+      }
+    }
+    if (added.length) {
+      setImported((im) => [...im, ...added]);
+      toast.success(added.length === 1 ? "Música importada" : `${added.length} músicas importadas`);
+    }
+  }, []);
+  const deleteImported = useCallback(
+    (id: number) => {
+      if (track.id === id) {
+        toast.error("Troque de música antes de apagar esta");
+        return;
+      }
+      deleteStored(id).catch(() => undefined);
+      setImported((im) => {
+        const t = im.find((x) => x.id === id);
+        if (t) URL.revokeObjectURL(t.src);
+        return im.filter((x) => x.id !== id);
+      });
+      setQueue((q) => {
+        const i = q.findIndex((x) => x.id === id);
+        if (i < 0) return q;
+        setIdx((cur) => (i < cur ? cur - 1 : cur));
+        return q.filter((x) => x.id !== id);
+      });
+    },
+    [track.id],
+  );
+  const library = useMemo(() => [...TRACKS, ...imported], [imported]);
+
   const openFull = useCallback(() => {
     if (router.state.location.state.player) return;
     void router.navigate({
@@ -245,6 +434,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setFavs([]);
     setPlaylists(DEFAULT_PLAYLISTS);
     setRecent([]);
+    statsRef.current = EMPTY_STATS;
+    statsDirty.current = false;
+    setStats(EMPTY_STATS);
     try {
       Object.values(KEYS).forEach((k) => window.localStorage.removeItem(k));
     } catch {
@@ -266,6 +458,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       favs,
       playlists,
       recent,
+      stats,
+      imported,
+      library,
+      sleep,
+      sleepLeft,
+      setSleep,
+      playNext,
+      moveInQueue,
+      removeFromQueue,
+      importFiles,
+      deleteImported,
       playTrack,
       playAt: (i) => goTo(i),
       toggle,
@@ -297,6 +500,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       favs,
       playlists,
       recent,
+      stats,
+      imported,
+      library,
+      sleep,
+      sleepLeft,
+      setSleep,
+      playNext,
+      moveInQueue,
+      removeFromQueue,
+      importFiles,
+      deleteImported,
       playTrack,
       goTo,
       toggle,
@@ -319,7 +533,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       <audio
         ref={audio}
         preload="metadata"
-        onPlay={() => setPlaying(true)}
+        onPlay={() => {
+          setPlaying(true);
+          if (countedNonce.current !== nonce) {
+            countedNonce.current = nonce;
+            const k = String(track.id);
+            const s = statsRef.current;
+            statsRef.current = { ...s, plays: { ...s.plays, [k]: (s.plays[k] ?? 0) + 1 } };
+            statsDirty.current = true;
+          }
+        }}
         onPause={() => setPlaying(false)}
         onError={() => {
           if (!audio.current?.getAttribute("src")) return;
@@ -327,9 +550,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           setPlaying(false);
           toast.error("Não foi possível tocar");
         }}
-        onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+        onTimeUpdate={(e) => {
+          const cur = e.currentTarget.currentTime;
+          const d = cur - lastTime.current;
+          lastTime.current = cur;
+          if (!e.currentTarget.paused && d > 0 && d < 2) {
+            const k = String(track.id);
+            const s = statsRef.current;
+            statsRef.current = { ...s, seconds: { ...s.seconds, [k]: (s.seconds[k] ?? 0) + d } };
+            statsDirty.current = true;
+          }
+          setTime(cur);
+        }}
         onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
         onEnded={() => {
+          if (sleep.mode === "track") {
+            wantPlay.current = false;
+            setSleepState({ mode: "off" });
+            toast("Timer de sono: música pausada");
+            return;
+          }
           if (repeat) {
             seek(0);
             audio.current?.play().catch(() => undefined);
