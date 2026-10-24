@@ -1,7 +1,7 @@
 /**
  * DADOS DE DEMONSTRAÇÃO.
  * Títulos, artistas e álbuns são fictícios; o áudio vem dos exemplos públicos do SoundHelix.
- * Nenhuma faixa tem letra real ainda — preencha `lyrics` quando houver letra licenciada.
+ * As letras abaixo são ORIGINAIS DE DEMONSTRAÇÃO, escritas para o app (o áudio é instrumental).
  */
 export type LyricLine = { time: number; text: string };
 
@@ -14,23 +14,71 @@ export type Track = {
   colors: [string, string];
   src: string;
   lyrics?: LyricLine[];
+  moods?: string[];
 };
 
-type Seed = [title: string, artist: string, album: string, genre: string, colors: [string, string]];
+export const MOODS = ["Foco", "Treino", "Relax", "Viagem"] as const;
 
-const SEEDS: Seed[] = [
-  ["Luz de Neon", "Aurora Vale", "Cidade Elétrica", "Pop", ["#ff2d55", "#5e2bff"]],
-  ["Maré Alta", "Os Faróis", "Litoral", "Indie", ["#0a84ff", "#30d158"]],
-  ["Concreto", "MC Atlas", "Ruas", "Hip-Hop", ["#ff9f0a", "#3a0ca3"]],
-  ["Pulso", "Kairo", "Frequência", "Eletrônica", ["#64d2ff", "#bf5af2"]],
-  ["Veludo", "Nina Sol", "Madrugada", "R&B", ["#ff375f", "#ff9f0a"]],
-  ["Trovão", "Ferro Velho", "Amplificado", "Rock", ["#8e8e93", "#ff3b30"]],
-  ["Horizonte", "Aurora Vale", "Cidade Elétrica", "Pop", ["#ffd60a", "#ff2d55"]],
-  ["Deserto", "Kairo", "Frequência", "Eletrônica", ["#ac8e68", "#5856d6"]],
+type Seed = [
+  title: string,
+  artist: string,
+  album: string,
+  genre: string,
+  colors: [string, string],
+  moods: string[],
 ];
 
-export const DEMO_TRACKS: Track[] = SEEDS.map(([title, artist, album, genre, colors], i) => ({
+const SEEDS: Seed[] = [
+  ["Luz de Neon", "Aurora Vale", "Cidade Elétrica", "Pop", ["#ff2d55", "#5e2bff"], ["Viagem", "Treino"]],
+  ["Maré Alta", "Os Faróis", "Litoral", "Indie", ["#0a84ff", "#30d158"], ["Relax", "Viagem"]],
+  ["Concreto", "MC Atlas", "Ruas", "Hip-Hop", ["#ff9f0a", "#3a0ca3"], ["Treino"]],
+  ["Pulso", "Kairo", "Frequência", "Eletrônica", ["#64d2ff", "#bf5af2"], ["Foco", "Treino"]],
+  ["Veludo", "Nina Sol", "Madrugada", "R&B", ["#ff375f", "#ff9f0a"], ["Relax"]],
+  ["Trovão", "Ferro Velho", "Amplificado", "Rock", ["#8e8e93", "#ff3b30"], ["Treino"]],
+  ["Horizonte", "Aurora Vale", "Cidade Elétrica", "Pop", ["#ffd60a", "#ff2d55"], ["Viagem"]],
+  ["Deserto", "Kairo", "Frequência", "Eletrônica", ["#ac8e68", "#5856d6"], ["Foco", "Relax"]],
+];
+
+const lines = (texts: string[], start = 10, step = 6): LyricLine[] =>
+  texts.map((text, i) => ({ time: start + i * step, text }));
+
+const DEMO_LYRICS: Record<number, LyricLine[]> = {
+  0: lines([
+    "A cidade acende devagar",
+    "Cada janela é uma canção",
+    "Eu sigo a luz de neon",
+    "Pelas ruas sem direção",
+    "O céu de vidro se partiu",
+    "E choveu cor no meu caminho",
+    "Luz de neon, luz de neon",
+    "Ninguém dança tão sozinho",
+  ]),
+  1: lines([
+    "O mar chegou sem avisar",
+    "Levou meus pés, levou meu chão",
+    "Maré alta no peito",
+    "Farol aceso na mão",
+    "Se a onda vier, eu vou",
+    "Se o vento virar, também",
+    "Maré alta, maré alta",
+    "Me leva pra onde ninguém vem",
+  ]),
+  4: lines([
+    "Madrugada de veludo",
+    "Teu nome no meu ouvido",
+    "A luz baixa, o som macio",
+    "Tudo fica mais bonito",
+    "Fica mais um minuto",
+    "O relógio pode esperar",
+    "Veludo, veludo",
+    "Até o dia clarear",
+  ]),
+};
+
+export const DEMO_TRACKS: Track[] = SEEDS.map(([title, artist, album, genre, colors, moods], i) => ({
   id: i,
+  moods,
+  ...(DEMO_LYRICS[i] ? { lyrics: DEMO_LYRICS[i] } : {}),
   title,
   artist,
   album,
