@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BibliotecaRouteImport } from './routes/biblioteca'
 import { Route as BuscarRouteImport } from './routes/buscar'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as RadioRouteImport } from './routes/radio'
 
@@ -30,6 +31,11 @@ const BuscarRoute = BuscarRouteImport.update({
   path: '/buscar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExplorarRoute = ExplorarRouteImport.update({
   id: '/explorar',
   path: '/explorar',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/biblioteca': typeof BibliotecaRoute
   '/buscar': typeof BuscarRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/explorar': typeof ExplorarRoute
   '/radio': typeof RadioRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/biblioteca': typeof BibliotecaRoute
   '/buscar': typeof BuscarRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/explorar': typeof ExplorarRoute
   '/radio': typeof RadioRoute
 }
@@ -60,21 +68,32 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/biblioteca': typeof BibliotecaRoute
   '/buscar': typeof BuscarRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/explorar': typeof ExplorarRoute
   '/radio': typeof RadioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/biblioteca' | '/buscar' | '/explorar' | '/radio'
+  fullPaths:
+    '/' | '/biblioteca' | '/buscar' | '/configuracoes' | '/explorar' | '/radio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/biblioteca' | '/buscar' | '/explorar' | '/radio'
-  id: '__root__' | '/' | '/biblioteca' | '/buscar' | '/explorar' | '/radio'
+  to:
+    '/' | '/biblioteca' | '/buscar' | '/configuracoes' | '/explorar' | '/radio'
+  id:
+    | '__root__'
+    | '/'
+    | '/biblioteca'
+    | '/buscar'
+    | '/configuracoes'
+    | '/explorar'
+    | '/radio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BibliotecaRoute: typeof BibliotecaRoute
   BuscarRoute: typeof BuscarRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   ExplorarRoute: typeof ExplorarRoute
   RadioRoute: typeof RadioRoute
 }
@@ -102,6 +121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuscarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explorar': {
       id: '/explorar'
       path: '/explorar'
@@ -123,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BibliotecaRoute: BibliotecaRoute,
   BuscarRoute: BuscarRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   ExplorarRoute: ExplorarRoute,
   RadioRoute: RadioRoute,
 }
