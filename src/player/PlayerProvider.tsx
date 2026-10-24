@@ -63,6 +63,7 @@ type PlayerCtx = {
   addToPlaylist: (pid: string, tid: number) => void;
   removeFromPlaylist: (pid: string, tid: number) => void;
   addRecent: (q: string) => void;
+  resetData: () => void;
 };
 
 const Ctx = createContext<PlayerCtx | null>(null);
@@ -240,6 +241,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (v) setRecent((r) => [v, ...r.filter((x) => x !== v)].slice(0, 5));
   }, []);
 
+  const resetData = useCallback(() => {
+    setFavs([]);
+    setPlaylists(DEFAULT_PLAYLISTS);
+    setRecent([]);
+    try {
+      Object.values(KEYS).forEach((k) => window.localStorage.removeItem(k));
+    } catch {
+      // armazenamento bloqueado: os estados já foram resetados
+    }
+  }, []);
+
   const value = useMemo<PlayerCtx>(
     () => ({
       track,
@@ -270,6 +282,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       addToPlaylist,
       removeFromPlaylist,
       addRecent,
+      resetData,
     }),
     [
       track,
@@ -297,6 +310,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       addToPlaylist,
       removeFromPlaylist,
       addRecent,
+      resetData,
     ],
   );
 

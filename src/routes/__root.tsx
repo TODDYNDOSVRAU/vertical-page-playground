@@ -17,6 +17,7 @@ import { MiniPlayer } from "@/components/music/MiniPlayer";
 import { TabBar } from "@/components/music/TabBar";
 import { FullPlayer } from "@/components/music/FullPlayer";
 import { Toaster } from "@/components/ui/sonner";
+import { Settings as SettingsIcon } from "lucide-react";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +136,13 @@ function RootComponent() {
               {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
               <Outlet />
             </main>
+            <Link
+              to="/configuracoes"
+              aria-label="Configurações"
+              className="absolute right-3 top-3 z-30 rounded-full border border-border bg-card/80 p-2 text-foreground shadow-sm backdrop-blur-xl"
+            >
+              <SettingsIcon className="h-5 w-5" aria-hidden="true" />
+            </Link>
             <MiniPlayer />
             <TabBar />
             <FullPlayer />
